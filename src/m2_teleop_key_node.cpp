@@ -209,7 +209,7 @@ private:
     vel.linear.y = l_scale_ * lineary;
 
   fprintf (stderr, "vel = %f, %f, %f, %f, %f", angular, linearx, lineary, a_scale_, l_scale_);
-  //  fprintf (stderr, "vel = %f, %f, %f", vel.linear.x, vel.linear.y, vel.angular.z);
+  fprintf (stderr, " * vel = %f, %f, %f \n", vel.linear.x, vel.linear.y, vel.angular.z);
     vel_pub_->publish(vel);
     return;
   }
