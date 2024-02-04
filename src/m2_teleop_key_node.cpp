@@ -34,16 +34,8 @@ class M2Teleop : public rclcpp::Node
     vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
       
     timer_ = this->create_wall_timer(
-        1000ms, std::bind(&M2Teleop::timer_callback, this));
-
-    // keytimer_ = this->create_wall_timer(
-    //     500ms, std::bind(&M2Teleop::keyLoop, this));
-
-
-        
+        500ms, std::bind(&M2Teleop::timer_callback, this));
   }
-
-
 
   void timer_callback()
   {
@@ -97,30 +89,27 @@ void keyLoop()
     char c;
 
     // get the console in raw mode
-    tcgetattr(kfd, &cooked);
+    tcgetattr(0, &cooked);
     memcpy(&raw, &cooked, sizeof(struct termios));
     raw.c_lflag &= ~(ICANON | ECHO);
     // Setting a new line, then end of file
     raw.c_cc[VEOL] = 1;
     raw.c_cc[VEOF] = 2;
-    tcsetattr(kfd, TCSANOW, &raw);
+    tcsetattr(0, TCSANOW, &raw);
 
     puts("Reading from keyboard");
     puts("---------------------------");
     puts("Use arrow keys to move the roboter like differntial drive.");
     puts("Use asdqwe keys to move the roboter like omnidirection drive.");
-puts("DEBUG ");
     while (rclcpp::ok())
     {
-      printf("value: 0x%02X", c);
       // get the next event from the keyboard
-      if (read(kfd, &c, 1) < 0)
+      if (read(0, &c, 1) < 0)
       {
         perror("read():");
         exit(-1);
       }
       // https://docs.ros.org/en/humble/Tutorials/Demos/Logging-and-logger-configuration.html
-      fprintf(stderr, "value: 0x%02X", c);
       RCLCPP_DEBUG(this->get_logger(), "value: 0x%02X", c);
       switch (c)
       {
@@ -131,7 +120,6 @@ puts("DEBUG ");
         current_angular += 1.0 / smoother_increments;
         if (current_angular > 1.0)
           current_angular = 1.0;
-         fprintf (stderr, "LEFT = %f", current_angular);
         break;
       case KEYCODE_RIGHT:
       case KEYCODE_E:
@@ -175,30 +163,31 @@ puts("DEBUG ");
 
   static void  quit(int)
   {
-    fprintf (stderr, "quit");
-    //tcsetattr(kfd, TCSANOW, &cooked);
+    tcsetattr(0, TCSANOW, &cooked);
+
+
+
     rclcpp::shutdown();
     exit(0);
   }
   
-  int kfd = 0 ;
-  struct  termios cooked, raw;
+  static int kfd ;
+  static struct  termios cooked, raw;
 
 private:
 
-  volatile double linear_ = 0.0, angular_ = 0.0;
-  volatile double l_scale_ = 1.0, a_scale_ = 1.0;
+  static double linear_ , angular_ ;
+  static double l_scale_, a_scale_;
 
-  volatile double smoother_increments = 100.0;
-  volatile double current_linear_x = 0.0; // current value. range -1 .. 1
-  volatile double current_linear_y = 0.0; // current value. range -1 .. 1
-  volatile double current_angular = 0.0;  // curent value. range -1 .. 1
+  static double smoother_increments;
+  static double current_linear_x; // current value. range -1 .. 1
+  static double current_linear_y; // current value. range -1 .. 1
+  static double current_angular;  // curent value. range -1 .. 1
 
   // std::mutex publish_mutex_;
 
   rclcpp::TimerBase::SharedPtr timer_;
   // rclcpp::TimerBase::SharedPtr keytimer_;
-
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub_;
 
   void publish3(double angular, double linearx, double lineary)
@@ -207,19 +196,22 @@ private:
     vel.angular.z = a_scale_ * angular;
     vel.linear.x = l_scale_ * linearx;
     vel.linear.y = l_scale_ * lineary;
-
-  fprintf (stderr, "vel = %f, %f, %f, %f, %f", angular, linearx, lineary, a_scale_, l_scale_);
-  fprintf (stderr, " * vel = %f, %f, %f \n", vel.linear.x, vel.linear.y, vel.angular.z);
     vel_pub_->publish(vel);
     return;
   }
-
-
 };
 
 
 
+  int M2Teleop::kfd = 0;
+  struct  termios M2Teleop::cooked, M2Teleop::raw;
+  double M2Teleop::linear_ = 0.0, M2Teleop::angular_ = 0.0;
+  double M2Teleop::l_scale_ = 1.0, M2Teleop::a_scale_ = 1.0;
 
+  double M2Teleop::smoother_increments = 10.0;
+  double M2Teleop::current_linear_x = 0.0; // current value. range -1 .. 1
+  double M2Teleop::current_linear_y = 0.0; // current value. range -1 .. 1
+  double M2Teleop::current_angular = 0.0;  // curent value. range -1 .. 1
 
 int main(int argc, char **argv)
 {
@@ -229,26 +221,7 @@ int main(int argc, char **argv)
     signal(SIGINT, M2Teleop::quit);
     std::thread my_thread(std::bind(&M2Teleop::keyLoop, &m2_teleop));
 
-
     rclcpp::spin(std::make_shared<M2Teleop>());
     rclcpp::shutdown();
-
-  //auto node = rclcpp::Node::make_shared("talker");
-//   auto chatter_pub = node->create_publisher<std_msgs::msg::String>("chatter", 1000);
-//   rclcpp::Rate loop_rate(10);
-//   int count = 0;
-// //  std_msgs::String msg;
-//   std_msgs::msg::String msg;
-// //  while (ros::ok())
-//   while (rclcpp::ok())
-//   {
-//     std::stringstream ss;
-//     ss << "hello world " << count++;
-//     msg.data = ss.str();
-//     RCLCPP_INFO(node->get_logger(), "%s\n", msg.data.c_str());
-//     chatter_pub->publish(msg);
-//     rclcpp::spin_some(node);
-//     loop_rate.sleep();
-//   }
   return 0;
 }
