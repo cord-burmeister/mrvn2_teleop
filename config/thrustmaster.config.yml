@@ -1,0 +1,34 @@
+# Thrustmaster T Flight Stick X
+teleop_twist_joy_node:
+  ros__parameters:
+# Whether to require the enable button for enabling movement.      
+    require_enable_button: false
+# Joystick axis to use for linear movement control.
+    axis_linear:  # Forward/Back
+      x: 1
+# Scale to apply to joystick linear axis for regular-speed movement.    
+    scale_linear:
+      x: 0.7
+# Scale to apply to joystick linear axis for high-speed movement.
+    scale_linear_turbo:
+      x: 1.5
+
+# Joystick axis to use for linear movement control.
+    axis_linear:  # Forward/Back
+      y: 1
+# Scale to apply to joystick linear axis for regular-speed movement.    
+    scale_linear:
+      y: 0.7
+# Scale to apply to joystick linear axis for high-speed movement.
+    scale_linear_turbo:
+      y: 1.5
+
+# Joystick axis to use for angular movement control.
+    axis_angular:  # Twist
+      yaw: 2
+# Scale to apply to joystick angular axis.
+    scale_angular:
+      yaw: 0.4
+
+    enable_button: 10  # Trigger fire button (1)
+    enable_turbo_button: 2  # Button 2 aka Fire rocket button (2)
