@@ -144,15 +144,15 @@ void keyLoop()
         break;
       case KEYCODE_D:
         RCLCPP_DEBUG(this->get_logger(), "STEP RIGHT");
-        current_linear_y += 1.0 / smoother_increments;
-        if (current_linear_y > 1.0)
-          current_linear_y = 1.0;
-        break;
-      case KEYCODE_A:
-        RCLCPP_DEBUG(this->get_logger(), "STEP LEFT");
         current_linear_y -= 1.0 / smoother_increments;
         if (current_linear_y < -1.0)
           current_linear_y = -1.0;
+        break;
+      case KEYCODE_A:
+        RCLCPP_DEBUG(this->get_logger(), "STEP LEFT");
+        current_linear_y += 1.0 / smoother_increments;
+        if (current_linear_y > 1.0)
+          current_linear_y = 1.0;
         break;
       }
       // publish_mutex_.lock();
