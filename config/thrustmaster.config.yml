@@ -1,5 +1,27 @@
-# Thrustmaster T Flight Stick X
-teleop_twist_joy_node:
+# Thrustmaster T FlightStick X
+# The joy stick joy message is mapped like 
+# axis
+#     0:  Left / Right
+#     1:  Forward/Back
+#     2:  Rotate Stick
+#     3:  Thrust Forward/Back
+#     4:  Rocket Left / Right
+#     5:  Rocket Forward/Back
+# button
+#     0:  Fire
+#     1:  Fire Rocket
+#     2:  Button 3
+#     3:  Button 4
+#     4:  Button 5
+#     5:  Button 6
+#     6:  Button 7
+#     7:  Button 8
+#     8:  Button 9
+#     9:  Button 10
+#     10:  Button 11
+#     11:  Button 12
+
+teleop_twist:
   ros__parameters:
 # Whether to require the enable button for enabling movement.      
     require_enable_button: false
@@ -14,8 +36,8 @@ teleop_twist_joy_node:
       x: 1.5
 
 # Joystick axis to use for linear movement control.
-    axis_linear:  # Forward/Back
-      y: 1
+    axis_linear:  # Left / Right
+      y: 0
 # Scale to apply to joystick linear axis for regular-speed movement.    
     scale_linear:
       y: 0.7
@@ -30,5 +52,5 @@ teleop_twist_joy_node:
     scale_angular:
       yaw: 0.4
 
-    enable_button: 10  # Trigger fire button (1)
-    enable_turbo_button: 2  # Button 2 aka Fire rocket button (2)
+    enable_button: 0  # Trigger fire button (1)
+    enable_turbo_button: 1  # Button 2 aka Fire rocket button (2)

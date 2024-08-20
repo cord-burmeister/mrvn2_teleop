@@ -1,0 +1,73 @@
+# yaml launch file for the joystick handling
+
+launch:
+
+# args that can be set from the command line or a default will be used
+- arg:
+    name: "background_r"
+    default: "0"
+- arg:
+    name: "background_g"
+    default: "255"
+- arg:
+    name: "background_b"
+    default: "0"
+- arg:
+    name: "joy_dev"
+    default: "/dev/input/js0"
+- arg:
+    name: "deadzone"
+    default: "0.3"
+- arg:
+    name: "config_file"
+    default: "$(find-pkg-share mrvn2_teleop)/config/thrustmaster.config.yml"
+
+
+
+
+# start a joystick node with the thrustmaster config
+- node:
+    pkg: "joy"
+    exec: "joy_node"
+    name: "joy"
+    param:
+    -
+      name: "deadzone"
+      value: "$(var deadzone)"
+    -
+      name: "dev"
+      value: "$(var joy_dev)"
+
+
+
+# start a joystick mapping 
+- node:
+    pkg: "teleop_twist_joy"
+    exec: "teleop_node"
+    name: "teleop_twist"
+    param:
+    -
+     from: "$(find-pkg-share mrvn2_teleop)/config/thrustmaster.config.yml"
+    remap:
+    -
+        from: "/cmd_vel"
+        to: "/turtlesim1/turtle1/cmd_vel"
+
+# start a turtlesim_node in the turtlesim1 namespace
+- node:
+    pkg: "turtlesim"
+    exec: "turtlesim_node"
+    name: "sim"
+    namespace: "turtlesim1"
+    param:
+    -
+      name: "background_r"
+      value: "$(var background_r)"
+    -
+      name: "background_g"
+      value: "$(var background_g)"
+    -
+      name: "background_b"
+      value: "$(var background_b)"
+
+
