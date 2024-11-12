@@ -11,6 +11,14 @@ def generate_launch_description():
     joy_dev = launch.substitutions.LaunchConfiguration('joy_dev')
     config_filepath = launch.substitutions.LaunchConfiguration('config_filepath')
 
+    # Error handling for missing configuration files
+    if not os.path.exists(config_filepath):
+        raise FileNotFoundError(f"Configuration file not found: {config_filepath}")
+
+    # Error handling for invalid configuration values
+    if not joy_config or not joy_dev:
+        raise ValueError("Invalid configuration values provided")
+
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument('joy_config', default_value='thrustmaster'),
         launch.actions.DeclareLaunchArgument('joy_dev', default_value='/dev/input/js0'),
@@ -32,7 +40,6 @@ def generate_launch_description():
             }]),
         launch_ros.actions.Node(
             package='teleop_twist_joy', executable='teleop_node',
-            name='teleop_twist_joy_node')
             name='teleop_twist_joy_node', parameters=[config_filepath])
 
     ])

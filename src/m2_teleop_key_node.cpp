@@ -6,7 +6,7 @@
 #include <functional>
 #include <memory>
 #include <string>
-
+#include <unistd.h> // for read function
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -39,7 +39,6 @@ class M2Teleop : public rclcpp::Node
 
   void timer_callback()
   {
-    //publish_mutex_.lock();
     {
       if ((current_linear_x < 1.0 / smoother_increments) &&
           (current_linear_x > -1.0 / smoother_increments))
@@ -115,7 +114,6 @@ void keyLoop()
       {
       case KEYCODE_LEFT:
       case KEYCODE_Q:
-
         RCLCPP_DEBUG(this->get_logger(), "LEFT");
         current_angular += 1.0 / smoother_increments;
         if (current_angular > 1.0)
@@ -154,19 +152,17 @@ void keyLoop()
         if (current_linear_y > 1.0)
           current_linear_y = 1.0;
         break;
+      default:
+        RCLCPP_WARN(this->get_logger(), "Invalid key input: 0x%02X", c);
+        break;
       }
-      // publish_mutex_.lock();
     }
     return;
   }
 
-
   static void  quit(int)
   {
     tcsetattr(0, TCSANOW, &cooked);
-
-
-
     rclcpp::shutdown();
     exit(0);
   }
@@ -184,10 +180,7 @@ private:
   static double current_linear_y; // current value. range -1 .. 1
   static double current_angular;  // curent value. range -1 .. 1
 
-  // std::mutex publish_mutex_;
-
   rclcpp::TimerBase::SharedPtr timer_;
-  // rclcpp::TimerBase::SharedPtr keytimer_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub_;
 
   void publish3(double angular, double linearx, double lineary)
@@ -201,27 +194,25 @@ private:
   }
 };
 
+int M2Teleop::kfd = 0;
+struct  termios M2Teleop::cooked, M2Teleop::raw;
+double M2Teleop::linear_ = 0.0, M2Teleop::angular_ = 0.0;
+double M2Teleop::l_scale_ = 1.0, M2Teleop::a_scale_ = 1.0;
 
-
-  int M2Teleop::kfd = 0;
-  struct  termios M2Teleop::cooked, M2Teleop::raw;
-  double M2Teleop::linear_ = 0.0, M2Teleop::angular_ = 0.0;
-  double M2Teleop::l_scale_ = 1.0, M2Teleop::a_scale_ = 1.0;
-
-  double M2Teleop::smoother_increments = 10.0;
-  double M2Teleop::current_linear_x = 0.0; // current value. range -1 .. 1
-  double M2Teleop::current_linear_y = 0.0; // current value. range -1 .. 1
-  double M2Teleop::current_angular = 0.0;  // curent value. range -1 .. 1
+double M2Teleop::smoother_increments = 10.0;
+double M2Teleop::current_linear_x = 0.0; // current value. range -1 .. 1
+double M2Teleop::current_linear_y = 0.0; // current value. range -1 .. 1
+double M2Teleop::current_angular = 0.0;  // curent value. range -1 .. 1
 
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
 
-    M2Teleop m2_teleop;
-    signal(SIGINT, M2Teleop::quit);
-    std::thread my_thread(std::bind(&M2Teleop::keyLoop, &m2_teleop));
+  M2Teleop m2_teleop;
+  signal(SIGINT, M2Teleop::quit);
+  std::thread my_thread(std::bind(&M2Teleop::keyLoop, &m2_teleop));
 
-    rclcpp::spin(std::make_shared<M2Teleop>());
-    rclcpp::shutdown();
+  rclcpp::spin(std::make_shared<M2Teleop>());
+  rclcpp::shutdown();
   return 0;
 }
