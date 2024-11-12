@@ -1,5 +1,3 @@
-# yaml launch file for the joystick handling
-
 launch:
 
 # args that can be set from the command line or a default will be used
@@ -22,8 +20,17 @@ launch:
     name: "config_file"
     default: "$(find-pkg-share mrvn2_teleop)/config/thrustmaster.config.yml"
 
+# Error handling for missing configuration files
+- if:
+    condition: "$(eval not os.path.exists($(var config_file)))"
+    then:
+        raise: "FileNotFoundError: Configuration file not found: $(var config_file)"
 
-
+# Error handling for invalid configuration values
+- if:
+    condition: "$(eval not $(var joy_dev) or not $(var deadzone))"
+    then:
+        raise: "ValueError: Invalid configuration values provided"
 
 # start a joystick node with the thrustmaster config
 - node:
@@ -37,8 +44,6 @@ launch:
     -
       name: "dev"
       value: "$(var joy_dev)"
-
-
 
 # start a joystick mapping 
 - node:
@@ -69,5 +74,3 @@ launch:
     -
       name: "background_b"
       value: "$(var background_b)"
-
-
